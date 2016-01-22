@@ -7,9 +7,17 @@
 ;;; push it up to github
 ;;;https://www.youtube.com/watch?v=SPgjgybGb5o&list=PL2VAYZE_4wRIoHsU5cEBIxCYcbHzy4Ypj&index=2
 ;;(ql:quickload test-project)
+;echo "# test-project" >> README.md
+;git init
+;git add README.md
+;git commit -m "first commit"
+;git remote add origin https://github.com/ajivani/test-project.git
+;git push -u origin master
+
 
 (defun hello ()
-  (print (num-islands *grid*)))
+  ;(print (num-islands *grid*)))
+  (print "hello"))
 
 ;;leetcode question islands 2d array find all islands
 ;;approach one have a list of all the places you've already been and mark the off
@@ -177,4 +185,50 @@
 		 (min-change-helper target coins hash (+ n 1)))))))
   
 
-;;
+;;logxor
+(defun 2s-complement (n)
+  (+ 1 (lognot n)))
+
+(defun bitwise-lowest1 (n)
+  (logand n (2s-complement (- n 1))))
+
+;x & ~(x - 1) ;;except the ~ is the 2s complement
+
+(parse-integer "00101100" :radix 2); 44
+(parse-integer "00101011" :radix 2); 43
+
+(parse-integer (format nil "~b" (logand 44 43)) :radix 2); 40
+
+(format nil "~b" (logand 44 43)); "101000" 
+
+(logand 44 (2s-complement 40)); 8
+(format nil "~b" (logand 44 (2s-complement 40))); "1000"
+;;;the above isn't the lowest 1, so we've done something wrong
+
+;;attempt 2 - x & ~(x-1) to get the 
+(parse-integer "00101100" :radix 2);44 x
+(parse-integer "00101011" :radix 2);43 (x - 1)
+
+(parse-integer "01010100" :radix 2); 212 or -84 if first thing is a 1
+(logand 44 212); 4 = "100" = correct answer
+
+;;goal is to get to the 212 or the -84
+(logand 44 (lognot (- 44 1))); 4 which is the answer
+(logxor 44 4); 40
+(format nil "~b" 40)
+
+;;takes a number and returns the binary string for it
+(defun print-binary-num (n &optional (stream nil))
+  (format stream "~b" n))
+
+
+;;finds the pos of lowest 1 in binary number
+(defun lowest-1 (n)
+  (logand n (lognot (- n 1))))
+
+;;counts the number of 1s in a binary number 
+(defun bitwise-count-1s (n &optional (acc 0))
+  (let ((lowest-1-pos (lowest-1 n)))
+    (cond ((<= lowest-1-pos 0) acc)
+	  ((< n 0) (bitwise-count-1s (logxor (* -1 n) lowest-1-pos) (1+ acc)))
+	  (t (bitwise-count-1s (logxor n lowest-1-pos) (1+ acc))))))
