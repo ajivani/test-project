@@ -232,3 +232,24 @@
     (cond ((<= lowest-1-pos 0) acc)
 	  ((< n 0) (bitwise-count-1s (logxor (* -1 n) lowest-1-pos) (1+ acc)))
 	  (t (bitwise-count-1s (logxor n lowest-1-pos) (1+ acc))))))
+
+(mapcar #'(lambda (b) (format nil "~b" b)) '(15 14 12 8 0))
+
+;;say you wanted to count the 1's in a 64 bit word - odd or even parity
+(defun parity-check (n)
+  (let ((pos1 (lowest-1 n)))
+    (cond ((equalp pos1 0) 0)
+	  (t (logxor 1 (parity-check (logxor n pos1)))))))
+
+(defun print-parity-check (n)
+  (format nil "number = ~b, parity = ~a" n (parity-check n)))
+
+
+;;now you want to count all the 1's in several 64 bit ones - odd or even parity
+;;need some sort of table
+;1111 1110 1010 0110
+;need a mapping table
+;00 nil
+;01 t - odd parity
+;10 t - odd parity
+;11 nil
