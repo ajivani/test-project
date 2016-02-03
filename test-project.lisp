@@ -253,3 +253,33 @@
 ;01 t - odd parity
 ;10 t - odd parity
 ;11 nil
+
+;;doing some array manipulation 
+;;pick an element and find all the lowest eql and hightest
+;;#1A(1 10 9 8 2 3 3 ); and index - 2 ->  #1A(1 8 2 3 3 9 10) - just has to be sorted around the index not hte whole array sorted
+
+;;say we only wanted to do this one time
+(defparameter *test-arry* #1A(54 26 93 17 77 31 44 55 20)) 
+
+(defun swap (arry i j)
+  "destructive way to swap elements of an arry"
+  (let ((temp (aref arry i)))
+    (setf (aref arry i) (aref arry j))
+    (setf (aref arry j) temp)))
+
+(defun quickpartion (arry i)
+  (let ((pivot (aref arry i))
+	(letftmark 1)
+	(rightmark (1- (length arry))))
+    (swap arr i 0); puts pivot right at the front
+    (while (< leftmark rightmark) 
+      (let ((leftelem (aref arr leftmark))
+	    (rightmark (aref arr rightmark)))
+	(cond ((and (> leftelem pivot)
+		    (< rightelem pivot))
+	       (swap arry rightmark leftmark) ;swap them and then move left again
+	       (incf leftmark))
+	      ((> leftelem pivot) (incf leftmark))
+	      ((< rightelem pivot) (decf rightmark)))))
+    (swap arr leftmark 0)
+	       
