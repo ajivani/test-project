@@ -278,8 +278,89 @@
 	(cond ((and (> leftelem pivot)
 		    (< rightelem pivot))
 	       (swap arry rightmark leftmark) ;swap them and then move left again
-	       (incf leftmark))
-	      ((> leftelem pivot) (incf leftmark))
-	      ((< rightelem pivot) (decf rightmark)))))
-    (swap arr leftmark 0)
-	       
+	       (incf leftmark)
+	       (decf rightmark))
+	      ((< leftelem pivot) (incf leftmark))
+	      ((> rightelem pivot) (decf rightmark)))))
+    (swap arr leftmark 0)))
+
+
+;;try it for the second one
+(defparameter *test-array2* #1A(3 0 5 4 2 1))
+
+;;;think about quicklisp intuitively with this sequence
+;;since quicksort is an in place algorithm it tries to make the array look like below
+;;in this scenario -
+;;l is all numbers less than the pivot - p
+;;h is a number higher than the pivot - p
+;;U are the yet unknown - they'll eventually be either l or h when we j gets to them
+;j is the counter that is going
+;;notice quicksort works because we keep two invariants going
+;;1) everything to the left of the pivot will be less than the pivot
+;;2) everything to the right of the piovt will be greater than the pivot
+;;this way when we run quicksort recursively on the lllll and the hhhhh since
+;;no pivots will be corssing over
+
+;Note how i is marking a special the point between the l and h where the pivot can be inserted
+;     i    j
+;plllllhhhhhUUUq
+
+;;what happens if the next element j looks at is an h 
+;     i     j
+;plllllhhhhhHuuq
+
+;;in this case we preserver the invariants and everything is still fine
+;;but what happens if the next U is an l? 
+
+;     i      j
+;plllllHhhhhhLuq
+;      ^     ^
+;;in this case see how the the invariants are messed up since we have an l a the end of the higher than section 
+;;so in the above case if we swtich the new L with the h closest to the group
+;;of Ls at the beginning then we can preserve the invariant again!
+
+;      i      j
+;plllllLhhhhhHuq 
+;      ^     ^   NOTE how the H and L switch and we preserve the pattern
+
+(defun quicksort (arry p q)
+  (let ((pivot p)) ;index of the pivot element
+    (if (> (- q p) 0) ;means we have something and looking at a valid section to partiton
+	(progn
+	  (setf pivot (partition arry p q))
+	  (quicksort arry p (1- pivot))
+	  (quicksort arry (1+ pivot) q)))))
+
+;;if we want ti sorted from low to high look at the intuitive explanation - change to > if we want it sorthed high to low
+(defun partition (arr p q &optional (fn '<))
+  (let ((pivot (aref arr p))
+	(i p)
+	(j (1+ p)))
+    (while (<= j q)
+      (if (funcall fn (aref arr j) pivot); case where plllHhhLuuq and we want to switch the L and the H
+	  (progn
+	    (incf i)
+	    (swap arr i j)))
+      (incf j))
+    (swap arr p i);swap the pivot with the value of the furthers l - like here:  PlllLhhhhhq -> LlllPhhhhh
+    i)); return the index position of the pivot
+
+; swap the pivot - which is at 
+
+(defun qs (arry)
+  (quicksort arry 0 (1- (length arry)))
+  arry)
+
+(defparameter *ta* #1A(3 3 1 3 6 5 3 1 2 12))
+(qs *ta*)
+
+;;so question we want to solve pick an index 
+;;group it so it has all the lowest equals and then the highers (but not doesn't have to all be sorted)
+(defun dutch-flag (arry index)
+  (let ((pivot-index 0))
+    (swap arry 0 index); put the pivot at the start
+    (setf pivot-index (partition arry 0 (1- (length arry))))
+    (partition arry pivot-index (1- (length arry)) '=)))
+	  
+
+(dutch-flag *ta* 3)
