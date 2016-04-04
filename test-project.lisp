@@ -498,4 +498,33 @@
       (do ((c (read-char s nil :eof) ;var initial
 	      (read-char s nil :eof)));and how c gets updated; read-char gets the next file
 	  ((eql :eof c)); end and return statement
-	(
+	(if (alpha-char-p c)
+	    (progn
+	      (setf (aref buffer pos) c)
+	      (incf pos))
+	    (unless (zerop pos) ;(when (not (zerop pos)))
+	      (progn
+		(see (intern (string-downcase (subseq buffer 0 pos)))) ;enter a word into *words*
+		(setf pos 0))
+	      (let ((p (punc c)));subseq makes it so we only pick "dog" from "dog." - the period is separate!
+		(if p (see p)))))))))
+
+;need to mark a punctuation as a single word - need to intern the symbol 
+(defun punc (c)
+  (case c
+    (#\. '|.|) (#\! '|!|)(#\? '|?|) 
+    (#\; '|;|) (#\: '|:|)))
+
+;;grab and put the next word into the *words* hash
+(let ((prev '|.|))
+  (defun see (symb)
+    (let ((pair (assoc symb (gethash prev *words*)))); for key = |the| value = ((|sin|. 4) (|good| . 1) (|bad| . 1) (|ugly| . 1))
+      (if pair
+	  (incf (cdr pair)) ;(|sin| . 1) => (|sin| . 2)
+	  (push (cons symb 1) (gethash prev *words*))); make the first entry
+      (setf prev symb)))); now the current word is the previous word next time the function is called
+
+
+;;what will be used to actually generate the next text
+(defun generate-text (n &optional (prev '|.|)) ; num words to be generated and the prev word
+  
