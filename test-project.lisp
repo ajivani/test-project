@@ -7,6 +7,7 @@
 ;;; push it up to github
 ;;;https://www.youtube.com/watch?v=SPgjgybGb5o&list=PL2VAYZE_4wRIoHsU5cEBIxCYcbHzy4Ypj&index=2
 ;;(ql:quickload test-project)
+;;(in-package #:test-project)
 ;echo "# test-project" >> README.md
 ;git init
 ;git add README.md
@@ -14,6 +15,8 @@
 ;git remote add origin https://github.com/ajivani/test-project.git
 ;git push -u origin master
 
+;;(ql:quickload 'test-package)
+;;(in-package #:test-project)
 
 (defun hello ()
   ;(print (num-islands *grid*)))
@@ -53,7 +56,7 @@
 	(find-similar-values initvalue (1+ r) c grid unchecked-grid); down
 	(find-similar-values initvalue r (1+ c) grid unchecked-grid); right
 	(find-similar-values initvalue (- r 1) c grid unchecked-grid); up
-	(find-similar-values in  itvalue r (- c 1) grid unchecked-grid)))); left
+	(find-similar-values initvalue r (- c 1) grid unchecked-grid)))); left
 
 (defun valid-point? (grid r c)
   (if (and (< r (array-dimension grid 0)) (< c (array-dimension grid 1))
@@ -65,7 +68,7 @@
 
 (defparameter *grid* #2A((1 1 1 0 0) (1 1 0 0 0) (0 0 1 0 0) (0 0 0 1 1)))
 
-(num-islands *grid*)
+(defparameter *num-islands-test* (num-islands *grid*))
 
 ;;solve using less memory assume no secondary array check off
 ;;add already seen stuff into a hash table
@@ -345,8 +348,7 @@
     (swap arr p i);swap the pivot with the value of the furthers l - like here:  PlllLhhhhhq -> LlllPhhhhh
     i)); return the index position of the pivot
 
-; swap the pivot - which is at 
-
+; swap the pivot - which is at the front to the mid 
 (defun qs (arry)
   (quicksort arry 0 (1- (length arry)))
   arry)
@@ -364,3 +366,136 @@
 	  
 
 (dutch-flag *ta* 3)
+
+;;add 1 to array
+(defparameter *arry-test* #1A( 1 9))
+
+(defun plus-1-helper (arry i carry newarry)
+  (let ((digit-val (mod (+ carry (aref arry i)) 10))
+	(new-carry (truncate (+ carry (aref arry i)) 10)))
+    (cond ((and (<= i 0) (>= new-carry 1))
+	   (setf newarry (make-array (1+ (length arry)) :initial-element 0))
+	   (format t "~%Array before is ~a" arry)
+	   (setf (aref newarry 0) 1)
+	   (format t "~%Array after is ~a" arry)
+	   (setf arry newarry)
+	   (format t "~%Array after after is ~a" arry)
+	   arry)
+	  ((and (<= i 0) (<= new-carry 0))
+	   (format t "~a digit val" digit-val)
+	   (setf (aref arry i) digit-val)
+	   arry)
+	  (t (setf (aref arry i) digit-val)
+	     (format t "~%arry is: ~a" arry)
+	     (plus-1-helper arry (1- i) new-carry newarry))))) 
+
+(dotimes (i 99 *arry-test*)
+  (plus-1-helper *arry-test* (1- (length *arry-test*)) 1 nil))       
+
+;;binary search
+(defun binary-search (arry element st end)
+  (let ((mid (truncate (+ st end) 2)))
+    (cond ((equalp (aref arry mid) element)
+	   mid)
+	  ((or (equalp st end)) nil); means it wasn't found 
+	  ((> element (aref arry mid))
+	   (binary-search arry element (1+ mid) end));;why look at the same element (we've checked it already so look past it)
+	  ((< element (aref arry mid))
+	   (binary-search arry element st (1- mid)))
+	  (t nil))))
+
+(defparameter *sorted* #1A(1 2 3 19 38 192 309))
+(defparameter *sorted2* #1A(4 14 23 39))
+
+;;find merge for use in merge sort
+;;invariant is that the lower of the 2 elements at the start of the list should be put into the new array 
+;;also the lower of the 2 arrays will be at the start of the array
+(defun my-merge (a1 a2)
+  (cond ((and (null a1) (null a2)) nil)  
+	((and (null a1) (not (null a2))) a2)
+	((and (null a2) (not (null a1))) a1);cases when one list is missing
+	(t
+	  (let ((ri 0)
+		(ret (make-array (+ (length a1) (length a2))));retarray will contain the min of both other arrays
+		(i 0)
+		(j 0))
+	    (while (< ri (length ret))
+	      (cond ((and (>= i (length a1)) (< j (length a2)))
+		     (setf (aref ret ri) (aref a2 j))
+		     (incf j))
+		    ((and (>= j (length a2)) (< i (length a1)))
+		     (setf (aref ret ri) (aref a1 i))
+		     (incf i))
+		    ((<= (aref a1 i) (aref a2 j))
+		     (setf (aref ret ri) (aref a1 i))
+		     (incf i))
+		    (t (setf (aref ret ri) (aref a2 j))
+		       (incf j)))
+	      (incf ri))
+	    ret))))
+	    
+	      
+(defun my-merge2 (a1 a2)
+  (if (and (null a1) (null a2))
+      nil
+      (let ((ri 0)
+	    (ret (make-array (+ (length a1) (length a2))));retarray will contain the min of both other arrays
+	    (i 0)
+	    (j 0))
+	    (while (< ri (length ret))
+	      (cond ((and (>= i (length a1)) (< j (length a2)))
+		     (setf (aref ret ri) (aref a2 j))
+		     (incf j))
+		    ((and (>= j (length a2)) (< i (length a1)))
+		     (setf (aref ret ri) (aref a1 i))
+		     (incf i))
+		    ((<= (aref a1 i) (aref a2 j))
+		     (setf (aref ret ri) (aref a1 i))
+		     (incf i))
+		    (t (setf (aref ret ri) (aref a2 j))
+		       (incf j)))
+	      (incf ri))
+	    ret)))	 
+
+   
+(defun mergesort (a st end)
+  (let ((mid (truncate (+ st end) 2)))
+    (cond ((equalp st end)
+	   (let ((ret (make-array 1)))
+	     (setf (aref ret 0) (aref a st))
+	     ret))
+	  ((or (> st end) (< end st)) nil)
+	  (t (my-merge (mergesort a st mid)
+		       (mergesort a (1+ mid) end))))))
+
+(defun ms (a)
+  (mergesort a 0 (1- (length a))))
+
+;;check it out
+(defparameter *ta2* #1A(3 3 1 3 6 5 3 1 2 12))
+(defparameter *ta3* #1A(2 1))
+;;change *ta3* to be 0 1 2 3 and n+1 elements
+(ms *ta3*); returns a new array 
+
+
+(hunchentoot:define-easy-handler (test-handler :uri "/test")
+    ((name :init-form "Pumpkin"))
+  (format nil "<doctype html>
+<title>common lisp recipies</title>
+<body>YO ~A! the lisp time is ~A.<body>"
+	  name (get-universal-time)))
+
+	  
+;;;random fun thing using key pairs to read a text and get that text to spit out something random
+
+(defparameter *words* (make-hash-table :size 100000)); will hold some symbols along with all the possible things that could be 
+(defconstant maxword 100); largest word size
+
+(defun read-text (pathname)
+  (with-open-file (s pathname :direction :input)
+    (let ((buffer (make-string maxword))
+	  (pos 0))
+      (do ((c (read-char s nil :eof) ;var initial
+	      (read-char s nil :eof)));and how c gets updated; read-char gets the next file
+	  ((eql :eof c)); end and return statement
+	(
